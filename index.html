@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpamGuard AI</title>
+  <meta name="description" content="SpamGuard AI enterprise-inspired email threat detection interface for a Flask spam classifier.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg-1: #081120;
+      --bg-2: #0f172a;
+      --bg-3: #172554;
+      --panel: rgba(255,255,255,0.08);
+      --panel-strong: rgba(255,255,255,0.12);
+      --border: rgba(255,255,255,0.12);
+      --text-soft: rgba(255,255,255,0.72);
+      --glow: 0 20px 50px rgba(0,0,0,0.35);
+      --primary-grad: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+      --success-grad: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      --danger-grad: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      color: #fff;
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.22), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(99,102,241,0.22), transparent 28%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2) 45%, var(--bg-3));
+      background-attachment: fixed;
+    }
+
+    .page-shell {
+      width: min(1180px, calc(100% - 1.5rem));
+      margin: 0 auto;
+      padding: 1rem 0 2rem;
+    }
+
+    .glass-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--glow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .topbar {
+      padding: 1rem 1.25rem;
+      margin-top: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+    }
+
+    .brand-icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: var(--primary-grad);
+      box-shadow: 0 10px 30px rgba(56,189,248,0.25);
+      font-size: 1.35rem;
+    }
+
+    .brand-wrap h1 {
+      margin: 0;
+      font-size: clamp(1.3rem, 2vw, 1.75rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-wrap p,
+    .hero-copy p,
+    .section-copy,
+    .muted-text,
+    .feature-list li,
+    .footer-note,
+    .result-note,
+    .mini-label {
+      color: var(--text-soft);
+    }
+
+    .brand-wrap p { margin: 0.15rem 0 0; }
+
+    .hero {
+      margin-top: 1.2rem;
+      padding: 1.4rem;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 1.2rem;
+      align-items: stretch;
+    }
+
+    .hero-copy,
+    .hero-visual {
+      border-radius: 22px;
+      padding: 1.5rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.9rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(56,189,248,0.12);
+      color: #7dd3fc;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .hero-copy h2 {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 0.98;
+      margin-bottom: 1rem;
+      max-width: 11ch;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.9rem;
+      margin-top: 1.4rem;
+    }
+
+    .stat-box {
+      padding: 1rem;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .stat-box h3 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin: 0 0 0.2rem;
+    }
+
+    .hero-visual {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100%;
+      position: relative;
+    }
+
+    .hero-visual::before {
+      content: "";
+      position: absolute;
+      inset: auto -60px -60px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(56,189,248,0.14);
+      filter: blur(20px);
+    }
+
+    .signal-line {
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(56,189,248,0.95), rgba(99,102,241,0.18));
+      margin-bottom: 1rem;
+    }
+
+    .signal-line:nth-child(2) { width: 82%; }
+    .signal-line:nth-child(3) { width: 68%; }
+
+    .security-box {
+      margin-top: 2rem;
+      padding: 1.1rem;
+      border-radius: 18px;
+      background: rgba(7, 15, 30, 0.42);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 1.2rem;
+      margin-top: 1.2rem;
+    }
+
+    .analyzer-card,
+    .result-card,
+    .why-card,
+    .capability-card,
+    .workflow-card {
+      padding: 1.4rem;
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.4rem;
+    }
+
+    .label-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 0.55rem;
+    }
+
+    .form-control,
+    .form-control:focus {
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      border-color: rgba(255,255,255,0.12);
+      box-shadow: none;
+    }
+
+    textarea.form-control {
+      min-height: 250px;
+      border-radius: 20px;
+      padding: 1rem 1rem 1.1rem;
+      resize: vertical;
+    }
+
+    textarea.form-control::placeholder,
+    .form-control::placeholder {
+      color: rgba(255,255,255,0.45);
+    }
+
+    .input-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .tool-chip {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      border-radius: 999px;
+      padding: 0.7rem 0.95rem;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+
+    .tool-chip:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-main {
+      background: var(--primary-grad);
+      border: none;
+      border-radius: 16px;
+      padding: 0.9rem 1.1rem;
+      font-weight: 700;
+      min-height: 54px;
+      box-shadow: 0 14px 32px rgba(56,189,248,0.20);
+    }
+
+    .btn-main:hover,
+    .btn-main:focus {
+      background: var(--primary-grad);
+      transform: translateY(-1px);
+    }
+
+    .loader {
+      display: none;
+      margin-top: 1rem;
+      border-radius: 16px;
+      padding: 0.95rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px dashed rgba(255,255,255,0.18);
+      color: #cbd5e1;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 1.2rem;
+    }
+
+    .result-state {
+      border-radius: 20px;
+      padding: 1rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .result-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1rem;
+      border-radius: 999px;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .badge-safe {
+      background: rgba(34,197,94,0.15);
+      color: #86efac;
+      border: 1px solid rgba(34,197,94,0.2);
+    }
+
+    .badge-spam {
+      background: rgba(244,63,94,0.15);
+      color: #fda4af;
+      border: 1px solid rgba(244,63,94,0.2);
+    }
+
+    .badge-warning {
+      background: rgba(251,191,36,0.14);
+      color: #fde68a;
+      border: 1px solid rgba(251,191,36,0.22);
+    }
+
+    .progress-wrap {
+      margin-top: 1rem;
+      padding: 0.95rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+
+    .progress {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      border-radius: 999px;
+      background: var(--primary-grad);
+      font-size: 0;
+    }
+
+    .empty-result {
+      padding: 1rem;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px dashed rgba(255,255,255,0.14);
+    }
+
+    .bullet-list {
+      padding-left: 1.1rem;
+      margin-bottom: 0;
+    }
+
+    .bullet-list li + li { margin-top: 0.7rem; }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.2rem;
+    }
+
+    .capability-card h5,
+    .workflow-card h5 {
+      font-weight: 700;
+      margin-bottom: 0.55rem;
+    }
+
+    .footer-note {
+      text-align: center;
+      padding: 1.5rem 0 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 991.98px) {
+      .hero-grid,
+      .main-grid,
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy h2 {
+        max-width: 100%;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      .page-shell { width: min(100% - 1rem, 1180px); }
+      .hero,
+      .analyzer-card,
+      .result-card,
+      .why-card,
+      .capability-card,
+      .workflow-card,
+      .topbar { padding: 1rem; }
+      .brand-wrap h1 { font-size: 1.15rem; }
+      .hero-copy h2 { font-size: 2rem; }
+      textarea.form-control { min-height: 220px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <header class="glass-card topbar">
+      <div class="brand-wrap">
+        <div class="brand-icon">🛡️</div>
+        <div>
+          <h1>SpamGuard AI</h1>
+          <p>Enterprise Email Threat Detection System</p>
+        </div>
+      </div>
+      <span class="badge text-bg-dark border border-secondary-subtle px-3 py-2 rounded-pill">ML + Flask Project UI</span>
+    </header>
+
+    <section class="glass-card hero">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow">Security Intelligence</span>
+          <h2>Analyze suspicious emails with a polished product-style frontend.</h2>
+          <p class="mb-0">This upgraded interface is designed for your Flask spam detection project, giving it a cleaner structure, premium glassmorphism styling, better visual hierarchy, and a more professional submission-ready appearance.</p>
+
+          <div class="hero-stats">
+            <div class="stat-box">
+              <h3>Fast</h3>
+              <div class="mini-label">Quick prediction flow</div>
+            </div>
+            <div class="stat-box">
+              <h3>Clear</h3>
+              <div class="mini-label">Readable confidence score</div>
+            </div>
+            <div class="stat-box">
+              <h3>Demo</h3>
+              <div class="mini-label">Ready for project showcase</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div>
+            <div class="eyebrow">Threat Scan Preview</div>
+            <div class="signal-line"></div>
+            <div class="signal-line"></div>
+            <div class="signal-line"></div>
+          </div>
+          <div class="security-box">
+            <h5 class="mb-2">Security workflow</h5>
+            <p class="mb-0 result-note">Paste email text, run the classifier, review prediction output, and inspect confidence level in a more refined analysis panel.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div class="glass-card analyzer-card">
+        <div class="mb-4">
+          <div class="eyebrow">Input Panel</div>
+          <h3 class="section-title">Email Content Analyzer</h3>
+          <p class="section-copy mb-0">Paste any email content below and click analyze to classify whether the message looks legitimate or spam-related.</p>
+        </div>
+
+        <form id="form" action="/predict" method="post">
+          <label for="email" class="label-title">Email content</label>
+          <textarea id="email" name="email" class="form-control mb-2" rows="7" placeholder="Paste email content here... Example: Congratulations! You have won a free reward. Click this link immediately to claim it.">{{ request.form.get('email', '') if request.form else '' }}</textarea>
+
+          <div class="input-tools">
+            <button type="button" class="tool-chip" data-fill="Congratulations! You have been selected for an exclusive cash reward. Click the link now to verify your account and claim your bonus.">Use spam sample</button>
+            <button type="button" class="tool-chip" data-fill="Dear student, the examination schedule has been updated. Please review the notice shared by the department office.">Use safe sample</button>
+            <button type="button" class="tool-chip" data-clear>Clear text</button>
+          </div>
+
+          <button class="btn btn-main w-100 text-white" id="submitBtn" type="submit">Analyze Email</button>
+        </form>
+
+        <div class="loader" id="loader">🤖 AI is analyzing email...</div>
+      </div>
+
+      <div class="side-stack">
+        <div class="glass-card result-card">
+          <div class="mb-3">
+            <div class="eyebrow">Prediction Output</div>
+            <h3 class="section-title">Result Dashboard</h3>
+            <p class="section-copy mb-0">The classifier result, explanation, and confidence score appear here.</p>
+          </div>
+
+          {% if prediction_text %}
+            <div class="result-state">
+              {% if 'Legitimate' in prediction_text %}
+                <div class="result-badge badge-safe">✅ {{ prediction_text }}</div>
+              {% elif 'Spam' in prediction_text %}
+                <div class="result-badge badge-spam">🚨 {{ prediction_text }}</div>
+              {% else %}
+                <div class="result-badge badge-warning">⚠️ {{ prediction_text }}</div>
+              {% endif %}
+
+              <p class="mb-0 result-note">{{ message }}</p>
+
+              <div class="progress-wrap">
+                <div class="progress-meta">
+                  <span class="muted-text">Confidence score</span>
+                  <strong>{{ confidence }}%</strong>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar" role="progressbar" style="width: {{ confidence }}%" aria-valuenow="{{ confidence }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <div class="empty-result">
+              <h5 class="mb-2">No result yet</h5>
+              <p class="mb-0 muted-text">Submit an email sample to display prediction status, confidence percentage, and explanation message here.</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="glass-card why-card">
+          <div class="eyebrow">Project Value</div>
+          <h3 class="section-title">Why SpamGuard AI?</h3>
+          <ul class="bullet-list feature-list">
+            <li>Detect phishing and spam patterns instantly from email content.</li>
+            <li>Reduce human error during suspicious email review.</li>
+            <li>Improve your project presentation with a more product-like interface.</li>
+            <li>Useful for demos, viva, portfolio, and ML mini-project submissions.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="info-grid">
+      <article class="glass-card capability-card">
+        <h5>Detailed frontend</h5>
+        <p class="mb-0 muted-text">This version adds a stronger landing section, better spacing, cleaner cards, improved result area, and richer overall design compared with the basic template.</p>
+      </article>
+      <article class="glass-card capability-card">
+        <h5>Interactive demo tools</h5>
+        <p class="mb-0 muted-text">Sample-fill buttons and loader states make the app easier to present during project evaluation.</p>
+      </article>
+      <article class="glass-card workflow-card">
+        <h5>Backend compatible</h5>
+        <p class="mb-0 muted-text">The page still works with your Flask route that posts to <code>/predict</code> and reads <code>prediction_text</code>, <code>message</code>, and <code>confidence</code>.</p>
+      </article>
+    </section>
+
+    <div class="footer-note">AI Security Demo • Built for Product Showcase • Upgraded Bootstrap Frontend</div>
+  </main>
+
+  <script>
+    const form = document.getElementById('form');
+    const loader = document.getElementById('loader');
+    const submitBtn = document.getElementById('submitBtn');
+    const textarea = document.getElementById('email');
+    const fillButtons = document.querySelectorAll('[data-fill]');
+    const clearButton = document.querySelector('[data-clear]');
+
+    fillButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        textarea.value = button.getAttribute('data-fill') || '';
+        textarea.focus();
+      });
+    });
+
+    if (clearButton) {
+      clearButton.addEventListener('click', () => {
+        textarea.value = '';
+        textarea.focus();
+      });
+    }
+
+    form.addEventListener('submit', function() {
+      loader.style.display = 'block';
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Analyzing...';
+
+      setTimeout(() => {
+        loader.innerHTML = '🧠 Extracting linguistic features...';
+    }, 500);
+
+    setTimeout(() => {
+        loader.innerHTML = '🔍 Checking spam probability...';
+    }, 1200);
+
+    setTimeout(() => {
+        loader.innerHTML = '⚡ Finalizing decision...';
+    }, 1800);
+    });
+  </script>
+</body>
+</html>
